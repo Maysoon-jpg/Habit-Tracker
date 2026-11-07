@@ -3,7 +3,8 @@ import java.io.BufferedReader; //Reads text from a file, one line at a time
 import java.io.FileReader; //Opens an existing file for reading
 import java.io.FileWriter; //Creates or writes to a file
 import java.io.IOException; // Handles errors that could occur during file operations
-import java.util.Scanner; // Recieves user input from the console
+import java.util.ArrayList; // Recieves user input from the console
+import java.util.Scanner;
 
 /* 
 
@@ -141,33 +142,57 @@ public class T1 {
     }
     }
 
-    static void logCompletionDates() {
-       
-        System.out.println("Which habit would you like to log?");
-        viewHabits();
-        Scanner scanner = new Scanner(System.in);
-        String habitToLog = scanner.nextLine();
-        System.out.println("How many completion dates would you like to log for this habit?");
-        int numDates = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
-        String[] completionDates = new String[numDates];
-        for (int i = 0; i < numDates; i++) {
-            System.out.println("Enter completion date " + (i + 1) + " (YYYY-MM-DD):");
-            completionDates[i] = scanner.nextLine();
+//method to log completion dates for habits, allowing the user to select a habit and enter multiple completion dates for that habit, which are then saved to a file called "completion_dates.txt"
+   static void logCompletionDates() {
 
-              try { 
-                FileWriter writer = new FileWriter("completion_dates.txt", true); 
-                writer.write(habitToLog + ": " + completionDates[i] + "\n"); 
-                writer.close(); //closes the filewriter object to free up system resources and ensure that all data is written to the file
-            } catch (IOException e) { //This handles errors that occur during the file-writing operation
-                System.out.println("An error occurred while writing to the file.");
-                e.printStackTrace(); //prints info about the error and where it occured
-            }
-        }
-      
-        
+    ArrayList<String> habits = loadHabits();
 
+    if (habits.isEmpty()) {
+        System.out.println("You haven't added any habits yet.");
+        return;
     }
+
+    System.out.println("Which habit would you like to log?");
+
+    for (int i = 0; i < habits.size(); i++) {
+        System.out.println((i + 1) + ". " + habits.get(i));
+    }
+
+    Scanner scanner = new Scanner(System.in);
+
+    int choice = scanner.nextInt();
+    scanner.nextLine();
+
+    if (choice < 1 || choice > habits.size()) {
+        System.out.println("Invalid habit selection.");
+        return;
+    }
+
+    String habitToLog = habits.get(choice - 1);
+
+    System.out.println("How many completion dates would you like to log?");
+    int numDates = scanner.nextInt();
+    scanner.nextLine();
+
+    for (int i = 0; i < numDates; i++) {
+
+        System.out.println("Enter completion date (YYYY-MM-DD):");
+        String date = scanner.nextLine();
+
+        try {
+            FileWriter writer = new FileWriter("completion_dates.txt", true);
+            writer.write(habitToLog + ": " + date + "\n");
+            writer.close();
+
+        } catch (IOException e) {
+            System.out.println("Error writing to file.");
+        }
+    }
+
+    System.out.println("Completion dates successfully recorded.");
+}
+
+//method to view completion dates for habits, reading from the "completion_dates.txt" file and displaying the logged completion dates to the user
     static void viewCompletionDates() {
         String filepath = "completion_dates.txt"; //file I want to access
 
@@ -184,7 +209,32 @@ public class T1 {
             e.printStackTrace();
         }
     }
+
+    // loading habits from the file into an ArrayList for further processing or analysis
+
+    static ArrayList<String> loadHabits() { //ArrayList<String> is similar to an array, but its size can change dynamically.
+    ArrayList<String> habits = new ArrayList<>();
+
+    try {
+        BufferedReader reader = new BufferedReader(new FileReader("habits.txt"));
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            habits.add(line); //adds an element to the arraylist
+        }
+
+        reader.close();
+
+    } catch (IOException e) {
+        System.out.println("Error reading habits.");
+    }
+
+    return habits;
+}
+
+
     static void viewHabitStatistics() {
         System.out.println("Viewing habit statistics is not yet implemented.");
     }
+
 }
