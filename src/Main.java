@@ -1,3 +1,5 @@
+package src;
+
 //importing libraries
 import java.io.BufferedReader; //Reads text from a file, one line at a time
 import java.io.FileReader; //Opens an existing file for reading
@@ -20,15 +22,10 @@ import java.util.Scanner;
 */ 
 
 // Main class called T1 
-public class T1 {
+public class Main {
 // Java starts executing from here when the program is ran
     public static void main(String[] args) { 
-        /* Public: java can access this method from outside the class, 
-        Static: java can run this method without creating an instance of the class, 
-        Void: this method does not return any value, 
-        Main: the name of the method, 
-        String[] args: an array of strings that can be passed as command line arguments */
-     
+      
         while (true) {
             displayMenu();
         }
@@ -37,11 +34,6 @@ public class T1 {
     }
 
     static void displayMenu() { 
-        
-        /* Method called displayMenu()
-        static: can be called without creating an instance of the class
-        void: it doesn't return any value
-        displayMenu: the name of the method */
 
         Scanner scanner = new Scanner(System.in); //creates a scanner object
         System.out.println("Pick an option (type the number): \n(1) Add habits \n(2) View habits \n(3) Delete all habits \n(4) Log completion dates \n(5) View completion dates\n(6) View habit statistics\n(7) Exit");
@@ -93,16 +85,14 @@ public class T1 {
         for (int i = 0; i < habits.length; i++) { //for loop,  repeats for the number of times the user inputted, allowing the user to add multiple habits in one go
             System.out.print("Enter a habit:");
             habits[i] = scanner.nextLine(); // stores the user's input in the habits array at the current index i
-
+            System.out.println("What is a description of your habit?");
+            String description = scanner.nextLine();
+            Habit habit = new Habit(habits[i], description); //creates a new habit object using the habit name entered by the user, this is done to create an instance of the Habit class for each habit added, allowing for future expansion of the Habit class to include additional attributes or methods related to habits
+            System.out.println("Habit added: " + habit.name + " - " + habit.description); //prints the name and description of the habit that was just added to the console, confirming to the user that their input was successfully recorded
             // Write habits to a file
             try { //try block contains code that might produce an error or exception
-                FileWriter writer = new FileWriter("habits.txt", true); //creates filewriter object
-                /*
-                FileWriter: The class responsible for writing text to files
-                writer: name of the object
-                habits.txt: the file to which the habits will be written
-                true: adds new content to the file instead of overwriting */
-                writer.write(habits[i] + "\n"); //this writes current habit into the file
+                FileWriter writer = new FileWriter("data/habits.txt", true); //creates filewriter object
+                writer.write(habit.name + " - " + habit.description + "\n"); //this writes current habit into the file
                 writer.close(); //closes the filewriter object to free up system resources and ensure that all data is written to the file
             } catch (IOException e) { //This handles errors that occur during the file-writing operation
                 System.out.println("An error occurred while writing to the file.");
@@ -112,7 +102,7 @@ public class T1 {
     }
     // Viewing habits
     static void viewHabits() {
-        String filepath = "habits.txt"; //file I want to access
+        String filepath = "data/habits.txt"; //file I want to access
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(filepath));
@@ -132,7 +122,7 @@ public class T1 {
     static void removeHabits() {
       
            try {
-        FileWriter writer = new FileWriter("habits.txt", false);
+        FileWriter writer = new FileWriter("data/habits.txt", false);
         writer.close();
 
         System.out.println("All habits deleted.");
@@ -145,42 +135,43 @@ public class T1 {
 //method to log completion dates for habits, allowing the user to select a habit and enter multiple completion dates for that habit, which are then saved to a file called "completion_dates.txt"
    static void logCompletionDates() {
 
-    ArrayList<String> habits = loadHabits();
+    ArrayList<String> habits = loadHabits(); //loads the habits from the "habits.txt" file.
 
-    if (habits.isEmpty()) {
+    if (habits.isEmpty()) { //so that the user knows they need to add habits before logging completion dates, if the habits list is empty, it means there are no habits to log completion dates for
         System.out.println("You haven't added any habits yet.");
         return;
     }
 
     System.out.println("Which habit would you like to log?");
 
-    for (int i = 0; i < habits.size(); i++) {
-        System.out.println((i + 1) + ". " + habits.get(i));
+    for (int i = 0; i < habits.size(); i++) { //for loop iterating through every habit in ArrayList.
+        System.out.println("(" +(i + 1) + ") " + habits.get(i));
     }
 
     Scanner scanner = new Scanner(System.in);
 
     int choice = scanner.nextInt();
-    scanner.nextLine();
-
+    scanner.nextLine(); //consumes the newline character left in the input.
+    //checks if the users number inputted is valid, as it has to be between 1 and the number of habits in the list.
     if (choice < 1 || choice > habits.size()) {
         System.out.println("Invalid habit selection.");
         return;
-    }
-
-    String habitToLog = habits.get(choice - 1);
+    } 
+    //habitToLog variable is assigned the habit selected by the user from the habits ArrayList, using their choice (adjusted for zero-based indexing).
+    //Initially had the user input the habit they wanted to log as a string, but this was changed to a selection from a list of habits to avoid errors and make it easier for the user.
+    String habitToLog = habits.get(choice - 1); // subtract 1 from their selection as ArrayList starts from 0 instead of 1.
 
     System.out.println("How many completion dates would you like to log?");
-    int numDates = scanner.nextInt();
-    scanner.nextLine();
+    int numDates = scanner.nextInt(); //number of completion dates inputted by user.
+    scanner.nextLine(); //consumes the newline character left in the input.
 
-    for (int i = 0; i < numDates; i++) {
+    for (int i = 0; i < numDates; i++) { //repeats for the number of completion dates the user wants to log, allowing them to enter multiple completion dates for the selected habit.
 
         System.out.println("Enter completion date (YYYY-MM-DD):");
-        String date = scanner.nextLine();
+        String date = scanner.nextLine(); //reads the completion date inputted by the user in the format YYYY-MM-DD.
 
-        try {
-            FileWriter writer = new FileWriter("completion_dates.txt", true);
+        try { //try block contains code that might produce an error or exception, in this case, writing to the "completion_dates.txt" file.
+            FileWriter writer = new FileWriter("data/completion_dates.txt", true); //set to true as want to appent information to the file instead of overwriting it.
             writer.write(habitToLog + ": " + date + "\n");
             writer.close();
 
@@ -194,7 +185,7 @@ public class T1 {
 
 //method to view completion dates for habits, reading from the "completion_dates.txt" file and displaying the logged completion dates to the user
     static void viewCompletionDates() {
-        String filepath = "completion_dates.txt"; //file I want to access
+        String filepath = "data/completion_dates.txt"; //file I want to access
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(filepath));
@@ -213,10 +204,12 @@ public class T1 {
     // loading habits from the file into an ArrayList for further processing or analysis
 
     static ArrayList<String> loadHabits() { //ArrayList<String> is similar to an array, but its size can change dynamically.
-    ArrayList<String> habits = new ArrayList<>();
+    ArrayList<String> habits = new ArrayList<>(); 
+    /*Array list may be a better option compared to an array as it is easier to
+    add and delete elements due to .add() and .remove() methods and it can grow dynamically over time */
 
     try {
-        BufferedReader reader = new BufferedReader(new FileReader("habits.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("data/habits.txt"));
         String line;
 
         while ((line = reader.readLine()) != null) {
