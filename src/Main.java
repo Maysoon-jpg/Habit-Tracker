@@ -88,11 +88,11 @@ public class Main {
             System.out.println("What is a description of your habit?");
             String description = scanner.nextLine();
             Habit habit = new Habit(habits[i], description); //creates a new habit object using the habit name entered by the user, this is done to create an instance of the Habit class for each habit added, allowing for future expansion of the Habit class to include additional attributes or methods related to habits
-            System.out.println("Habit added: " + habit.name + " - " + habit.description); //prints the name and description of the habit that was just added to the console, confirming to the user that their input was successfully recorded
+            System.out.println("Habit added: " + habit.getName() + " - " + habit.getDescription()); //prints the name and description of the habit that was just added to the console, confirming to the user that their input was successfully recorded
             // Write habits to a file
             try { //try block contains code that might produce an error or exception
                 FileWriter writer = new FileWriter("data/habits.txt", true); //creates filewriter object
-                writer.write(habit.name + " - " + habit.description + "\n"); //this writes current habit into the file
+                writer.write(habit.getName() + " - " + habit.getDescription() + "\n"); //this writes current habit into the file
                 writer.close(); //closes the filewriter object to free up system resources and ensure that all data is written to the file
             } catch (IOException e) { //This handles errors that occur during the file-writing operation
                 System.out.println("An error occurred while writing to the file.");
@@ -169,10 +169,10 @@ public class Main {
 
         System.out.println("Enter completion date (YYYY-MM-DD):");
         String date = scanner.nextLine(); //reads the completion date inputted by the user in the format YYYY-MM-DD.
-
+        Completion completionDate = new Completion(date, 0); //creates a new Completion object with the inputted date and a default duration, this is done to create an instance of the Completion class for each completion date logged, allowing for future expansion of the Completion class to include additional attributes or methods related to completion dates.
         try { //try block contains code that might produce an error or exception, in this case, writing to the "completion_dates.txt" file.
             FileWriter writer = new FileWriter("data/completion_dates.txt", true); //set to true as want to appent information to the file instead of overwriting it.
-            writer.write(habitToLog + ": " + date + "\n");
+            writer.write(habitToLog + ": " + completionDate.getDate() + " (Duration: " + completionDate.getDuration() + ")\n");
             writer.close();
 
         } catch (IOException e) {

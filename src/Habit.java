@@ -4,15 +4,27 @@ package src;
 public class Habit {
        
             //habits attributes
-             String name;    
-             String description; 
+             private String name;    
+             private String description; 
              //ArrayList<String> completionDates;
 
           
         
-           Habit(String name, String description) {
+           public Habit(String name, String description) {
                  this.name = name;
                  this.description = description;
                  //this.completionDates = new ArrayList<String>();
              }
+
+           // getters - allow other classes to read the private attributes
+           public String getName() {
+                 return name;
+             }
+
+           public String getDescription() {
+                 return description;
+             }
+
+
 }
+
