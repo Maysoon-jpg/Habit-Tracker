@@ -90,7 +90,7 @@ public class Main {
             Habit habit = new Habit(habits[i], description); //creates a new habit object using the habit name entered by the user, this is done to create an instance of the Habit class for each habit added, allowing for future expansion of the Habit class to include additional attributes or methods related to habits
             System.out.println("Habit added: " + habit.getName() + " - " + habit.getDescription()); //prints the name and description of the habit that was just added to the console, confirming to the user that their input was successfully recorded
             // Write habits to a file
-            try { //try block contains code that might produce an error or exception
+            try { //try block contains codgire that might produce an error or exception
                 FileWriter writer = new FileWriter("data/habits.txt", true); //creates filewriter object
                 writer.write(habit.getName() + " - " + habit.getDescription() + "\n"); //this writes current habit into the file
                 writer.close(); //closes the filewriter object to free up system resources and ensure that all data is written to the file

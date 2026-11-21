@@ -6,17 +6,18 @@ public class Habit {
             //habits attributes
              private String name;    
              private String description; 
-             //ArrayList<String> completionDates;
+             private ArrayList<String> completionDates; //composition - a habit has a list of completion dates
+             //composition is when one object contains or owns other objects as part of its structure
 
           
         
            public Habit(String name, String description) {
                  this.name = name;
                  this.description = description;
-                 //this.completionDates = new ArrayList<String>();
+                 this.completionDates = new ArrayList<>();
              }
 
-           // getters - allow other classes to read the private attributes
+           // getters - allow other classes to read the private attributes (encapsulation)
            public String getName() {
                  return name;
              }
@@ -25,6 +26,13 @@ public class Habit {
                  return description;
              }
 
+           public ArrayList<String> getCompletionDates() {
+                 return completionDates;
+             }
+
+          public void addCompletionDate(String date) {
+                 completionDates.add(date);
+             }
 
 }
 
