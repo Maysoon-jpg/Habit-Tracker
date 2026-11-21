@@ -232,18 +232,25 @@ public class Main {
     }
 
     // loading habits from the file into an ArrayList for further processing or analysis
+    // Creates a habit object when reading text file, allowing for future expansion of the Habit class to include additional attributes or methods related to habits.
 
-    static ArrayList<String> loadHabits() { //ArrayList<String> is similar to an array, but its size can change dynamically.
-    ArrayList<String> habits = new ArrayList<>(); 
-    /*Array list may be a better option compared to an array as it is easier to
-    add and delete elements due to .add() and .remove() methods and it can grow dynamically over time */
+static ArrayList<Habit> loadHabits() {
+    ArrayList<Habit> habits = new ArrayList<>();
 
     try {
-        BufferedReader reader = new BufferedReader(new FileReader("data/habits.txt"));
+        BufferedReader reader = new BufferedReader(
+            new FileReader("data/habits.txt")
+        );
+
         String line;
 
         while ((line = reader.readLine()) != null) {
-            habits.add(line); //adds an element to the arraylist
+
+            String[] parts = line.split(" - ", 2);
+
+            Habit habit = new Habit(parts[0], parts[1]);
+
+            habits.add(habit);
         }
 
         reader.close();

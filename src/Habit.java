@@ -9,6 +9,7 @@ public class Habit {
              private String description; 
              private ArrayList<String> completionDates; //composition - a habit has a list of completion dates
              //composition is when one object contains or owns other objects as part of its structure
+             //every habit object now has a list of completion dates
 
           
         
@@ -28,7 +29,7 @@ public class Habit {
              }
 
            public ArrayList<String> getCompletionDates() {
-                 return completionDates;
+                 return new ArrayList<>(completionDates);
              }
 
           public void addCompletionDate(String date) {
