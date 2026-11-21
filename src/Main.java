@@ -103,7 +103,13 @@ public class Main {
 
         for (int i = 0; i < habits.length; i++) { //for loop,  repeats for the number of times the user inputted, allowing the user to add multiple habits in one go
             System.out.print("Enter a habit:");
-            habits[i] = scanner.nextLine(); // stores the user's input in the habits array at the current index i
+            habits[i] = scanner.nextLine().trim(); // stores the user's input in the habits array at the current index i
+            // an empty name, or one containing " - " (the separator used in habits.txt), would break loading later
+            if (habits[i].isEmpty() || habits[i].contains(" - ")) {
+                System.out.println("Habit name can't be empty or contain \" - \". Try again.");
+                i--; // repeat this step
+                continue;
+            }
             System.out.println("What is a description of your habit?");
             String description = scanner.nextLine();
             Habit habit = new Habit(habits[i], description); //creates a new habit object using the habit name entered by the user, this is done to create an instance of the Habit class for each habit added, allowing for future expansion of the Habit class to include additional attributes or methods related to habits
@@ -129,6 +135,9 @@ public class Main {
             System.out.println("Your habits:");
             boolean any = false;
             while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) { // don't print blank lines as empty habits
+                    continue;
+                }
                 System.out.println("- " + line);
                 any = true;
             }
@@ -158,7 +167,7 @@ public class Main {
 //method to log completion dates for habits, allowing the user to select a habit and enter multiple completion dates for that habit, which are then saved to a file called "completion_dates.txt"
    static void logCompletionDates() {
 
-    ArrayList<String> habits = loadHabits(); //loads the habits from the "habits.txt" file.
+    ArrayList<Habit> habits = loadHabits(); //loads the habits from the "habits.txt" file.
 
     if (habits.isEmpty()) { //so that the user knows they need to add habits before logging completion dates, if the habits list is empty, it means there are no habits to log completion dates for
         System.out.println("You haven't added any habits yet.");
@@ -168,7 +177,7 @@ public class Main {
     System.out.println("Which habit would you like to log?");
 
     for (int i = 0; i < habits.size(); i++) { //for loop iterating through every habit in ArrayList.
-        System.out.println("(" +(i + 1) + ") " + habits.get(i));
+        System.out.println("(" +(i + 1) + ") " + habits.get(i).getName());
     }
 
     int choice = readInt();
@@ -179,7 +188,7 @@ public class Main {
     } 
     //habitToLog variable is assigned the habit selected by the user from the habits ArrayList, using their choice (adjusted for zero-based indexing).
     //Initially had the user input the habit they wanted to log as a string, but this was changed to a selection from a list of habits to avoid errors and make it easier for the user.
-    String habitToLog = habits.get(choice - 1); // subtract 1 from their selection as ArrayList starts from 0 instead of 1.
+    Habit habitToLog = habits.get(choice - 1); // subtract 1 from their selection as ArrayList starts from 0 instead of 1.
 
     System.out.println("How many completion dates would you like to log?");
     int numDates = readInt(); //number of completion dates inputted by user.
@@ -199,10 +208,10 @@ public class Main {
             i--; // repeat this loop step so the user still gets to enter the number of dates they asked for
             continue;
         }
-        Completion completionDate = new Completion(date, 0); //creates a new Completion object with the inputted date and a default duration, this is done to create an instance of the Completion class for each completion date logged, allowing for future expansion of the Completion class to include additional attributes or methods related to completion dates.
+        habitToLog.addCompletionDate(date); //adds the completion date to the selected habit's list of completion dates.
         try { //try block contains code that might produce an error or exception, in this case, writing to the "completion_dates.txt" file.
             FileWriter writer = new FileWriter("data/completion_dates.txt", true); //set to true as want to appent information to the file instead of overwriting it.
-            writer.write(habitToLog + ": " + completionDate.getDate() + " (Duration: " + completionDate.getDuration() + ")\n");
+            writer.write(habitToLog.getName() + ": " + date + "\n");
             writer.close();
 
         } catch (IOException e) {
@@ -221,13 +230,18 @@ public class Main {
             BufferedReader reader = new BufferedReader(new FileReader(filepath));
             String line;
             System.out.println("Your completion dates:");
+            boolean any = false;
             while ((line = reader.readLine()) != null) {
                 System.out.println("- " + line);
+                any = true;
+            }
+            if (!any) {
+                System.out.println("(none yet)");
             }
             reader.close();
         } catch (IOException e) {
-            System.out.println("An error occurred while reading the file.");
-            e.printStackTrace();
+            // the file doesn't exist until the first date is logged, so this isn't a real error
+            System.out.println("No completion dates logged yet.");
         }
     }
 
@@ -246,9 +260,15 @@ static ArrayList<Habit> loadHabits() {
 
         while ((line = reader.readLine()) != null) {
 
-            String[] parts = line.split(" - ", 2);
+            if (line.trim().isEmpty()) { // skip blank lines instead of crashing on them
+                continue;
+            }
 
-            Habit habit = new Habit(parts[0], parts[1]);
+            String[] parts = line.split(" - ", 2);
+            // a line with no " - " has no description; parts[1] would crash with ArrayIndexOutOfBoundsException
+            String description = parts.length > 1 ? parts[1] : "";
+
+            Habit habit = new Habit(parts[0], description);
 
             habits.add(habit);
         }
@@ -256,7 +276,7 @@ static ArrayList<Habit> loadHabits() {
         reader.close();
 
     } catch (IOException e) {
-        System.out.println("Error reading habits.");
+        // file doesn't exist yet - just return the empty list, the caller tells the user there are no habits
     }
 
     return habits;
