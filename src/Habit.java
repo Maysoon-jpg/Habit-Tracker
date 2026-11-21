@@ -1,5 +1,6 @@
-
 package src;
+
+import java.util.ArrayList; // needed so Java knows what ArrayList is
 
 public class Habit {
        

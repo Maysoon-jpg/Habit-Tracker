@@ -5,8 +5,10 @@ import java.io.BufferedReader; //Reads text from a file, one line at a time
 import java.io.FileReader; //Opens an existing file for reading
 import java.io.FileWriter; //Creates or writes to a file
 import java.io.IOException; // Handles errors that could occur during file operations
-import java.util.ArrayList; // Recieves user input from the console
-import java.util.Scanner;
+import java.time.LocalDate; // Used to check that a completion date is a real date
+import java.time.format.DateTimeParseException; // Error thrown when a date is not in YYYY-MM-DD format
+import java.util.ArrayList; // A list that can grow or shrink
+import java.util.Scanner; // Receives user input from the console
 
 /* 
 
@@ -21,8 +23,25 @@ import java.util.Scanner;
 
 */ 
 
-// Main class called T1 
+// Main class
 public class Main {
+
+    // One shared scanner for the whole program. Creating a new Scanner(System.in) in every method
+    // is a bug: each scanner buffers input ahead, so typed/pasted input can get "lost" between them.
+    static Scanner scanner = new Scanner(System.in);
+
+    // Reads a whole number from the user. If they type something that isn't a number (e.g. "abc"),
+    // it asks again instead of crashing with an InputMismatchException.
+    static int readInt() {
+        while (true) {
+            String input = scanner.nextLine().trim();
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a whole number:");
+            }
+        }
+    }
 // Java starts executing from here when the program is ran
     public static void main(String[] args) { 
       
@@ -35,10 +54,8 @@ public class Main {
 
     static void displayMenu() { 
 
-        Scanner scanner = new Scanner(System.in); //creates a scanner object
         System.out.println("Pick an option (type the number): \n(1) Add habits \n(2) View habits \n(3) Delete all habits \n(4) Log completion dates \n(5) View completion dates\n(6) View habit statistics\n(7) Exit");
-        int option = scanner.nextInt(); //reads the user's choice
-        scanner.nextLine(); // consumes the newline character left in the input buffer after reading the integer
+        int option = readInt(); //reads the user's choice (safely - won't crash on letters)
 
         // Check the user's choice and call the corresponding method
         if (option == 1) {
@@ -73,14 +90,16 @@ public class Main {
     // Add habits - this method allows the user to add habits to a text file called "habits.txt"
     static void addHabits() {
         
-        Scanner scanner = new Scanner(System.in); //creates a scanner object, creating a new scanner here because its separate from displayMenu() method and needs its own scanner object to read user input
         String[] habits; //declares an array called habits that can store multiple strings
         int size; // declaring integer variable called size that will be used to store the number of habits the user wants to add
 
         System.out.println("How many habits would you like to add?");
-        size = scanner.nextInt(); // size of the array
+        size = readInt(); // size of the array
+        if (size < 1) { // a negative size would crash with NegativeArraySizeException
+            System.out.println("You need to add at least 1 habit.");
+            return;
+        }
         habits = new String[size]; //creates a new array of strings with the specified size to store the habits
-        scanner.nextLine(); // consumes the newline character left in the input buffer after reading the integer
 
         for (int i = 0; i < habits.length; i++) { //for loop,  repeats for the number of times the user inputted, allowing the user to add multiple habits in one go
             System.out.print("Enter a habit:");
@@ -108,13 +127,17 @@ public class Main {
             BufferedReader reader = new BufferedReader(new FileReader(filepath));
             String line;
             System.out.println("Your habits:");
+            boolean any = false;
             while ((line = reader.readLine()) != null) {
                 System.out.println("- " + line);
+                any = true;
+            }
+            if (!any) {
+                System.out.println("(none yet)");
             }
             reader.close();
         } catch (IOException e) {
-            System.out.println("An error occurred while reading the file.");
-            e.printStackTrace();
+            System.out.println("No habits found yet.");
         }
 
     }
@@ -148,10 +171,7 @@ public class Main {
         System.out.println("(" +(i + 1) + ") " + habits.get(i));
     }
 
-    Scanner scanner = new Scanner(System.in);
-
-    int choice = scanner.nextInt();
-    scanner.nextLine(); //consumes the newline character left in the input.
+    int choice = readInt();
     //checks if the users number inputted is valid, as it has to be between 1 and the number of habits in the list.
     if (choice < 1 || choice > habits.size()) {
         System.out.println("Invalid habit selection.");
@@ -162,13 +182,23 @@ public class Main {
     String habitToLog = habits.get(choice - 1); // subtract 1 from their selection as ArrayList starts from 0 instead of 1.
 
     System.out.println("How many completion dates would you like to log?");
-    int numDates = scanner.nextInt(); //number of completion dates inputted by user.
-    scanner.nextLine(); //consumes the newline character left in the input.
+    int numDates = readInt(); //number of completion dates inputted by user.
+    if (numDates < 1) {
+        System.out.println("Nothing to log.");
+        return;
+    }
 
     for (int i = 0; i < numDates; i++) { //repeats for the number of completion dates the user wants to log, allowing them to enter multiple completion dates for the selected habit.
 
         System.out.println("Enter completion date (YYYY-MM-DD):");
-        String date = scanner.nextLine(); //reads the completion date inputted by the user in the format YYYY-MM-DD.
+        String date = scanner.nextLine().trim(); //reads the completion date inputted by the user in the format YYYY-MM-DD.
+        try {
+            LocalDate.parse(date); // throws an error if the date isn't valid, e.g. "hello" or "2026-13-45"
+        } catch (DateTimeParseException e) {
+            System.out.println("That isn't a valid date in YYYY-MM-DD format. Try again.");
+            i--; // repeat this loop step so the user still gets to enter the number of dates they asked for
+            continue;
+        }
         Completion completionDate = new Completion(date, 0); //creates a new Completion object with the inputted date and a default duration, this is done to create an instance of the Completion class for each completion date logged, allowing for future expansion of the Completion class to include additional attributes or methods related to completion dates.
         try { //try block contains code that might produce an error or exception, in this case, writing to the "completion_dates.txt" file.
             FileWriter writer = new FileWriter("data/completion_dates.txt", true); //set to true as want to appent information to the file instead of overwriting it.
